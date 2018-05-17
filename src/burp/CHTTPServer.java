@@ -41,11 +41,13 @@ public class CHTTPServer extends Thread{
     
     public void run(){
 		server.createContext("/generatePayload", new generatePayload(this.ccc));
-		server.createContext("/fetchAllCollaboratorInteractions", new fetchAllCollaboratorInteractions(this.ccc));
-		server.createContext("/fetchCollaboratorInteractionsFor", new fetchCollaboratorInteractionsFor(this.ccc,this.helpers,this.stdout));
-		server.createContext("/fetchAllInfiltratorInteractions", new fetchAllInfiltratorInteractions(this.ccc));
-		server.createContext("/fetchInfiltratorInteractionsFor", new fetchInfiltratorInteractionsFor(this.ccc));
-		server.createContext("/getCollaboratorServerLocation", new getCollaboratorServerLocation(this.ccc));
+		//server.createContext("/fetchAllCollaboratorInteractions", new fetchAllCollaboratorInteractions(this.ccc));
+		//server.createContext("/fetchCollaboratorInteractionsFor", new fetchCollaboratorInteractionsFor(this.ccc,this.helpers,this.stdout));
+		server.createContext("/fetchFor", new fetchCollaboratorInteractionsFor(this.ccc,this.helpers,this.stdout));
+
+		//server.createContext("/fetchAllInfiltratorInteractions", new fetchAllInfiltratorInteractions(this.ccc));
+		//server.createContext("/fetchInfiltratorInteractionsFor", new fetchInfiltratorInteractionsFor(this.ccc));
+		//server.createContext("/getCollaboratorServerLocation", new getCollaboratorServerLocation(this.ccc));
 		ExecutorService httpThreadPool = Executors.newFixedThreadPool(10);//
 		server.setExecutor(httpThreadPool);
 		server.start();
@@ -99,6 +101,7 @@ public class CHTTPServer extends Thread{
         @Override
         public void handle(HttpExchange t) throws IOException {
         	//http://127.0.0.1:8000/fetchCollaboratorInteractionsFor?payload=xxxxx
+        	//http://127.0.0.1:8000/fetchFor?payload=xxxxx
         	Map<String, String> params = queryToMap(t.getRequestURI().getQuery()); 
         	String payload =  params.get("payload");
     		final List<IBurpCollaboratorInteraction> bci = ccc.fetchCollaboratorInteractionsFor(payload);
@@ -106,7 +109,12 @@ public class CHTTPServer extends Thread{
     		String response ="";
     		for (IBurpCollaboratorInteraction interaction : bci) {
     			final Map<String, String> props = interaction.getProperties();
-    			stdout.println(props);
+    			response = response + props.toString();
+    			stdout.println("------------------------");
+    			stdout.println(props.toString());
+    			stdout.print("\n");
+    			stdout.println(response);
+    			stdout.println("------------------------");
     	    	
     			/*
     			for (final Map.Entry<String, String> entry : props.entrySet()) {
@@ -119,11 +127,9 @@ public class CHTTPServer extends Thread{
     					final byte[] buf = InetAddress.getByName(v).getAddress();
     				}
     			}*/
-    		} 
+    			}
             t.sendResponseHeaders(200, response.length());
             OutputStream os = t.getResponseBody();
-            stdout.println(response.getBytes().length);
-            stdout.println(response.getBytes().toString());
             os.write(response.getBytes());
             os.close();
         }

@@ -5,11 +5,11 @@ import java.io.PrintWriter;
 public class BurpExtender extends Thread implements IBurpExtender, IExtensionStateListener
 {
 	public String ExtenderName = "Collaborator HTTP API";
-	public String github = "https://github.com/bit4woo/BCHA";
+	public String github = "https://github.com/bit4woo/burp_collaborator_http_api";
 	public IBurpCollaboratorClientContext ccc;
 	public IExtensionHelpers helpers;
 	public PrintWriter stdout;//用于输出，主要用于代码调试
-	public CHTTPServer httpserver;
+	public HTTPServer httpserver;
 
 	@Override
 	public void registerExtenderCallbacks(IBurpExtenderCallbacks callbacks)
@@ -21,7 +21,7 @@ public class BurpExtender extends Thread implements IBurpExtender, IExtensionSta
 		callbacks.registerExtensionStateListener(this);
 		ccc = callbacks.createBurpCollaboratorClientContext();
 		helpers = callbacks.getHelpers();
-		httpserver = new CHTTPServer(this);//!!!传递this对象，以便httpserver中可以调用它的方法和属性!!!!
+		httpserver = new HTTPServer(this);//!!!传递this对象，以便httpserver中可以调用它的方法和属性!!!!
 		//stdout.println(this);
 		httpserver.run();
 		start();

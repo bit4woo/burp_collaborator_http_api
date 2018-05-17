@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -20,7 +22,7 @@ public class CHTTPServerTest extends Thread{
 	}
 
     public static void main(String[] args) throws Exception {
-        HttpServer server = HttpServer.create(new InetSocketAddress(8000), 0);
+        HttpServer server = HttpServer.create(new InetSocketAddress(8001), 0);
         server.createContext("/getProperty", new getProperty());
         
         server.createContext("/generatePayload", new generatePayload());
@@ -54,10 +56,14 @@ public class CHTTPServerTest extends Thread{
         @Override
         public void handle(HttpExchange t) throws IOException {
             String response = "This is the response";
+            System.out.println(response.getBytes().length);
+            System.out.println(response.getBytes().toString());
             t.sendResponseHeaders(200, response.length());
             OutputStream os = t.getResponseBody();
             os.write(response.getBytes());
             os.close();
+            System.out.println(response.getBytes().length);
+            System.out.println(response.getBytes().toString());
         }
     }
     
@@ -74,6 +80,8 @@ public class CHTTPServerTest extends Thread{
     static class fetchCollaboratorInteractionsFor implements HttpHandler {
         @Override
         public void handle(HttpExchange t) throws IOException {
+        	Map<String, String> params = queryToMap(t.getRequestURI().getQuery()); 
+        	String payload =  params.get("payload");
             String response = "This is the response";
             t.sendResponseHeaders(200, response.length());
             OutputStream os = t.getResponseBody();
@@ -111,6 +119,17 @@ public class CHTTPServerTest extends Thread{
             os.close();
         }
     }
-    
+    public static Map<String, String> queryToMap(String query){
+        Map<String, String> result = new HashMap<String, String>();
+        for (String param : query.split("&")) {
+            String pair[] = param.split("=");
+            if (pair.length>1) {
+                result.put(pair[0], pair[1]);
+            }else{
+                result.put(pair[0], "");
+            }
+        }
+        return result;
+    }
 
 }
