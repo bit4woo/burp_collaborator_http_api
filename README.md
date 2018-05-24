@@ -18,7 +18,7 @@ A burp extender that let you use burp collaborator server within http api
 
 这个方式使用的是burp官方的服务器
 
-![install.png](.\install.png)
+![install.png](./install.png)
 
 
 
@@ -65,7 +65,7 @@ res = requests.get(url)
 print  res.content
 
 ```
-![call api.png](.\call api.png)
+![call api.png](./call api.png)
 
 
 
