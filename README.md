@@ -14,7 +14,7 @@ A burp extender that let you use burp collaborator server within http api
 
 ##部署说明：
 
-*最简单的方式一：运行burp pro并安装[这个插件](https://github.com/bit4woo/burp_collaborator_http_api/releases)即可。*
+*最简单的方式一：运行burp pro并安装[这个插件](https://github.com/bit4woo/burp_collaborator_http_api/releases/latest)即可。*
 
 这个方式使用的是burp官方的服务器
 
