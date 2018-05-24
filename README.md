@@ -65,7 +65,7 @@ res = requests.get(url)
 print  res.content
 
 ```
-![call api.png](./call api.png)
+![callapi.png](./callapi.png)
 
 
 
