@@ -1,4 +1,4 @@
-package burp;
+package test;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,6 +13,11 @@ import java.util.concurrent.Executors;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+
+import burp.BurpExtender;
+import burp.IBurpCollaboratorClientContext;
+import burp.IBurpCollaboratorInteraction;
+import burp.IExtensionHelpers;
 
 public class CHTTPServer extends Thread{
 	private final IBurpCollaboratorClientContext ccc;

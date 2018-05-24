@@ -3,7 +3,10 @@ package burp;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +31,18 @@ public class HTTPServer extends Thread{
 		this.BE = BE;
 		try {
 			server = HttpServer.create(new InetSocketAddress(8000), 0);
-			String ip_port = server.getAddress().toString();
-			this.stdout.println("Http server started at "+ip_port);
+			//String ip_port = server.getAddress().toString();
+			try {
+				String ip = getLocalHostLANAddress().getHostAddress();
+				this.stdout.println("Http server started at http://"+ip+":8000");
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				String ip_port = server.getAddress().toString();
+				this.stdout.println("Http server started at http://"+ip_port);
+			}
+			
+			
 		} catch (IOException e) {
 			this.stdout.println(e);
 		}
@@ -115,4 +128,35 @@ public class HTTPServer extends Thread{
         }
         return result;
     }
+    public static InetAddress getLocalHostLANAddress() throws Exception {
+	    try {
+	        InetAddress candidateAddress = null;
+	        // 遍历所有的网络接口
+	        for (Enumeration ifaces = NetworkInterface.getNetworkInterfaces(); ifaces.hasMoreElements(); ) {
+	            NetworkInterface iface = (NetworkInterface) ifaces.nextElement();
+	            // 在所有的接口下再遍历IP
+	            for (Enumeration inetAddrs = iface.getInetAddresses(); inetAddrs.hasMoreElements(); ) {
+	                InetAddress inetAddr = (InetAddress) inetAddrs.nextElement();
+	                if (!inetAddr.isLoopbackAddress()) {// 排除loopback类型地址
+	                    if (inetAddr.isSiteLocalAddress()) {
+	                        // 如果是site-local地址，就是它了
+	                        return inetAddr;
+	                    } else if (candidateAddress == null) {
+	                        // site-local类型的地址未被发现，先记录候选地址
+	                        candidateAddress = inetAddr;
+	                    }
+	                }
+	            }
+	        }
+	        if (candidateAddress != null) {
+	            return candidateAddress;
+	        }
+	        // 如果没有发现 non-loopback地址.只能用最次选的方案
+	        InetAddress jdkSuppliedAddress = InetAddress.getLocalHost();
+	        return jdkSuppliedAddress;
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	    return null;
+	}
 }

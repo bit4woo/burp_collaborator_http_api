@@ -1,0 +1,56 @@
+{
+  "serverDomain" : "burp.your.domain",
+  "workerThreads" : 10,
+  "eventCapture": {
+      "localAddress" : ["10.20.0.159", "127.0.0.1"],
+      "publicAddress" : "10.20.0.159",
+      "http": {
+         "ports" : 80
+       },
+      "https": {
+          "ports" : 443
+      },
+      "smtp": {
+          "ports" : [25, 587]
+      },
+      "smtps": {
+          "ports" : 465
+      },
+      "ssl": {
+          "certificateFiles" : [
+              "keys/burp.your.domain.key.pkcs8", 
+              "keys/burp.your.domain.crt", 
+              "keys/intermediate.crt" ]
+      }
+  },
+  "polling" : {
+      "localAddress" : "127.0.0.1",
+      "publicAddress" : "10.20.0.159",
+      "http": {
+          "port" : 9090
+      },
+      "https": {
+          "port" : 9443
+      },
+      "ssl": {
+          "hostname" : "burp.your.domain"
+      }
+  },
+  "metrics": {
+      "path" : "jnaicmez8",
+      "addressWhitelist" : ["0.0.0.0/24"]
+  },
+  "dns": {
+      "interfaces" : [{
+          "name":"ns1",
+          "localAddress":"34.23.11.6",
+          "publicAddress":"98.87.76.55"
+      },{
+          "name":"ns2",
+          "localAddress":"34.23.11.6",
+          "publicAddress":"98.87.11.00"
+      }],
+      "ports" : 53
+   },
+   "logLevel" : "INFO"
+}
