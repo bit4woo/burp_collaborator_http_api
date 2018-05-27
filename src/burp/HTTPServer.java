@@ -6,10 +6,12 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -84,28 +86,72 @@ public class HTTPServer extends Thread{
     	private final IBurpCollaboratorClientContext ccc;
     	private final IExtensionHelpers helpers;
     	private final PrintWriter stdout;
+    	private List<String> typeList = new ArrayList<>();
     	
     	public fetchCollaboratorInteractionsFor(BurpExtender BE) {
     		this.ccc = BE.ccc;
     		this.helpers = BE.helpers;
     		this.stdout = BE.stdout;
+        	typeList.add("http");
+        	typeList.add("https");
+        	typeList.add("dns");
+        	typeList.add("smtp");
+        	typeList.add("smtps");
+        	typeList.add("ftp");
     	}
+    	
+        public Map<String,String> dealResponse(Map<String,String> props){
+        	props.remove("interaction_type");
+    		props.remove("interaction_id");
+    		for (Entry<String, String> entry : props.entrySet()) {
+    			String k = entry.getKey();
+    			String v = entry.getValue();
+    			if (k.equals("request") || k.equals("response") || k.equals("raw_query")) {
+    				final byte[] buf = helpers.base64Decode(v);
+    				props.put(k, new String(buf));
+    			}
+    		}
+    		return props;
+        }
     	
         @Override
         public void handle(HttpExchange t) throws IOException {
- 
+        	String response ="";
         	Map<String, String> params = queryToMap(t.getRequestURI().getQuery()); 
         	String payload =  params.get("payload");
+        	String type = params.get("type");
+        	stdout.println("your query type is: "+type+"\n");
+        	
+        	
     		final List<IBurpCollaboratorInteraction> bci = ccc.fetchCollaboratorInteractionsFor(payload);
-    		stdout.println(bci.size()+" record found:\n");
-    		String response ="";
-    		for (IBurpCollaboratorInteraction interaction : bci) {
-    			final Map<String, String> props = interaction.getProperties();
-    			response += props.toString();
-    			stdout.println(props);
-    			stdout.print("\n");
+    		stdout.println(bci.size()+" record(s) found in total\n");
+    		
+        	if (type.toLowerCase().equals("all") || type==null) {//获取所有记录
+        		stdout.println("Fetching all records...\n");
+        		for (IBurpCollaboratorInteraction interaction : bci) {
+        			Map<String, String> props = interaction.getProperties();
+        			props = dealResponse(props);
+        			response += props.toString();
+        			stdout.println(props);
+        			stdout.print("\n");
+        		}
+        	}
+        	else if(typeList.contains(type.toLowerCase())) {//获取指定类型的记录
+        		stdout.println("Fetching "+type+" records...\n");
+        		for (IBurpCollaboratorInteraction interaction : bci) {
+        			if (interaction.getProperty("type").toLowerCase().equals(type.toLowerCase())) {
+            			Map<String, String> props = interaction.getProperties();
+            			props = dealResponse(props);
+            			response += props.toString();
+            			stdout.println(props);
+            			stdout.print("\n");
+        			}
+        		}
+        	}else {//类型错误
+        		response = "Error, wrong type";
+        	}
+    		
 
-    		}
             //t.sendResponseHeaders(200, response.length());//长度如果不匹配，输出将没有内容；大概是时间中文编码导致的获取长度不一致。
     		//https://docs.oracle.com/javase/7/docs/jre/api/net/httpserver/spec/com/sun/net/httpserver/HttpExchange.html
             t.sendResponseHeaders(200,0);
@@ -128,6 +174,8 @@ public class HTTPServer extends Thread{
         }
         return result;
     }
+    
+
     public static InetAddress getLocalHostLANAddress() throws Exception {
 	    try {
 	        InetAddress candidateAddress = null;
